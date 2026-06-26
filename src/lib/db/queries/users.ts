@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../index";
 import { users } from "../schema";
-import { firstOrUndefined } from "./utils";
+import { allOrUndefined, firstOrUndefined } from "./utils";
 
 export async function createUser(name: string) {
     const [ result ] = await db.insert(users).values({ name: name}).returning();
@@ -19,4 +19,5 @@ export async function resetDatabase() {
 
 export async function getUsers() {
     const result = await db.select().from(users);
+    return allOrUndefined(result);
 }

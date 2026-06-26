@@ -1,5 +1,5 @@
-import { setUser } from "../config";
-import { createUser, getUser, resetDatabase } from "../lib/db/queries/users";
+import { setUser, readConfig } from "../config";
+import { createUser, getUser, getUsers, resetDatabase } from "../lib/db/queries/users";
 
 export async function handlerLogin(cmdName: string, ...args: string[]) {
     const username = args[0];
@@ -47,6 +47,19 @@ export async function handlerReset() {
     try {
         await resetDatabase();
         console.log("users table has been reset!");
+    } catch (err) {
+        throw new Error(`Error: ${(err as Error).message}`);
+    }
+}
+
+export async function handlerUsers() {
+    try {
+        const items = await getUsers(); 
+        if (items) {
+            for (const item of items) {
+                item.name === readConfig().currentUserName ? console.log(`* ${item.name} (current)`) : console.log(`* ${item.name}`);
+            }
+        }
     } catch (err) {
         throw new Error(`Error: ${(err as Error).message}`);
     }
