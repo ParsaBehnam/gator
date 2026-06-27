@@ -4,6 +4,7 @@ import {
     runCommand, 
 } from "./commands/commands";
 import { handlerLogin, handlerRegister, handlerReset, handlerUsers } from "./commands/users";
+import { handlerAggregate } from "./commands/aggregate";
 
 async function main() {
     const registry: CommandsRegistry = {};
@@ -12,6 +13,7 @@ async function main() {
     registerCommand(registry, "register", handlerRegister);
     registerCommand(registry, "reset", handlerReset);
     registerCommand(registry, "users", handlerUsers);
+    registerCommand(registry, "agg", handlerAggregate)
 
     const args = process.argv.slice(2);
 

@@ -14,8 +14,8 @@ export async function handlerLogin(cmdName: string, ...args: string[]) {
             throw new Error("Error: user not found!");
         }
 
-    setUser(username);
-    console.log("the user has been set successfully!"); 
+    setUser(getUserResult.name);
+    console.log("User switched successfully!"); 
 }
 
 export async function handlerRegister(cmdName: string, ...args: string[]) {
