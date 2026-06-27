@@ -8,6 +8,13 @@
       "when": 1782485251815,
       "tag": "0000_lively_medusa",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1782554930805,
+      "tag": "0001_nifty_midnight",
+      "breakpoints": true
     }
   ]
 }
