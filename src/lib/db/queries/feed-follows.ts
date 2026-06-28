@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { db } from "..";
 import { feeds, feedFollows, users } from "../schema";
 import { firstOrUndefined, allOrUndefined } from "./utils";
+import { getFeedByURL } from "./feeds";
 
 export async function createFeedFollow(feedId: string, userId: string ) {
     const [ newFeedFollowRecord ] = await db.insert(feedFollows).values({feedId: feedId, userId: userId}).returning();
@@ -37,4 +38,24 @@ export async function getFeedFollowsForUser(userId: string) {
     .where(eq(feedFollows.userId, userId));
     
     return allOrUndefined(result);
+}
+
+export async function deleteFeedFollow (url: string, userId: string) {
+    const feed = await getFeedByURL(url);
+    if (!feed) {
+        throw new Error("failed fetching the followed feed!");
+    }
+    const [ result ] = await db.delete(feedFollows).where(
+                                                and(
+                                                    eq(feedFollows.userId, userId),
+                                                    eq(feedFollows.feedId, feed?.id)
+    )
+   )
+   .returning();
+
+   if (!result) {
+    throw new Error("No record found to delete");
+    }
+
+   return result;
 }
