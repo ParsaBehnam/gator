@@ -1,6 +1,6 @@
 import { readConfig } from "../config";
 import { getUserByName, getUserById } from "../lib/db/queries/users";
-import { createFeed, getFeeds } from "../lib/db/queries/feeds";
+import { createFeed, getFeedByURL, getFeeds, createFeedFollow, getFeedFollowsForUser } from "../lib/db/queries/feeds";
 import type { Feed, User } from "../lib/db/schema";
 
 export async function handlerAddFeed(cmdName: string, ...args: string[]) {
@@ -15,13 +15,20 @@ export async function handlerAddFeed(cmdName: string, ...args: string[]) {
         throw new Error("current user not found!");
     }
 
-  const feed = await createFeed(name, url, currentUser?.id);
+  const feed = await createFeed(name, url, currentUser.id);
 
-  if (!feed) {
-    throw new Error("failed to create feed");
+    if (!feed) {
+      throw new Error("failed to create feed");
     }
-  printFeed(feed, currentUser);
 
+    const feedFollow = await createFeedFollow(feed.id, currentUser.id);
+
+    if(!feedFollow) {
+      throw new Error("could not fetch feed_follow info!");
+    }
+
+    console.log(`${feedFollow.userName} is now following ${feedFollow.feedsName}!\n`);
+    printFeed(feed, currentUser);
 }
 
 export async function handlerGetFeeds( _: string) {
@@ -50,4 +57,43 @@ function printFeed(feed: Feed, user: User) {
   console.log(`* name:          ${feed.name}`);
   console.log(`* URL:           ${feed.url}`);
   console.log(`* User:          ${user.name}`);
+}
+
+export async function handlerFollow(cmdName: string, ...args: string[]) {
+  if (args.length !== 1) {
+    throw new Error(`usage: ${cmdName} <FEED_URL>`);
+  }
+  const feedUrl = args[0];
+  
+  if (!feedUrl) {
+    throw new Error("could not get feed's URL!");
+  }
+
+    const currentUser = await getUserByName(readConfig().currentUserName);
+    const feed = await getFeedByURL(feedUrl);
+
+    if (currentUser && feed) {
+    const feedFollowRecord = await createFeedFollow(feed.id,currentUser?.id);
+    console.log(`${currentUser.name} is now following ${feed.name}!`);
+  }
+} 
+
+export async function handlerFollowing(_: string) {
+  const currentUser = await getUserByName(readConfig().currentUserName);
+
+  if (!currentUser) {
+    throw new Error("could not retrieve current user info!");
+  }
+
+  const feedFollows = await getFeedFollowsForUser(currentUser.id);
+
+  if (!feedFollows) {
+    throw new Error(`could not retrieve followed feeds info!`);
+  }
+
+  console.log(`${currentUser.name} is following:`);
+
+  for (const follow of feedFollows) {
+    console.log(` * ${follow.feedsName}`);
+  }
 }

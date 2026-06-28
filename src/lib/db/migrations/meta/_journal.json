@@ -15,6 +15,13 @@
       "when": 1782554930805,
       "tag": "0001_nifty_midnight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782653973787,
+      "tag": "0002_careful_logan",
+      "breakpoints": true
     }
   ]
 }
