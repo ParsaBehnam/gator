@@ -8,8 +8,13 @@ export async function createUser(name: string) {
     return result;
 }
 
-export async function getUser(name: string) {
+export async function getUserByName(name: string) {
     const result = await db.select().from(users).where(eq(users.name, name));
+    return firstOrUndefined(result);
+}
+
+export async function getUserById(id: string) {
+    const result = await db.select().from(users).where(eq(users.id, id));
     return firstOrUndefined(result);
 }
 
