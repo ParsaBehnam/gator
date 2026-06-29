@@ -45,12 +45,7 @@ export async function deleteFeedFollow (url: string, userId: string) {
     if (!feed) {
         throw new Error("failed fetching the followed feed!");
     }
-    const [ result ] = await db.delete(feedFollows).where(
-                                                and(
-                                                    eq(feedFollows.userId, userId),
-                                                    eq(feedFollows.feedId, feed?.id)
-    )
-   )
+    const [ result ] = await db.delete(feedFollows).where(and(eq(feedFollows.userId, userId), eq(feedFollows.feedId, feed?.id)))
    .returning();
 
    if (!result) {

@@ -3,66 +3,63 @@ import { XMLParser } from "fast-xml-parser";
 
 export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
     const response = await fetch(feedURL, {
-        method: "GET",
-        mode: "cors",
         headers: {
-            "User-Agent": "gator", 
+        "User-Agent": "gator",
+        accept: "application/rss+xml",
         },
     });
 
-    const parser = new XMLParser({
-        processEntities: false,
-    }); 
-    const parsedObj = parser.parse(await response.text());
+    if (!response.ok) {
+        throw new Error(`failed to fetch feed: ${response.status} ${response.statusText}`);
+    }
 
-    if (!parsedObj.rss.channel) {
+    const xml = await response.text();
+    const parser = new XMLParser();
+    let result = parser.parse(xml); 
+
+    const channel = result.rss?.channel;
+
+    if (!channel) {
         throw new Error("failed to parse channel");
     }
 
-    const { rss:
+    if (
+    !channel ||
+    !channel.title ||
+    !channel.link ||
+    !channel.description ||
+    !channel.item
+  ) {
+    throw new Error("failed to parse channel");
+  }
 
-        { channel:
+    const items: any[] = Array.isArray(channel.item)
+    ? channel.item
+    : [channel.item];
 
-            { title, link, description }
-
-            } 
-               } = parsedObj;
-
-    if (!title || !link || !description) {
-        throw new Error("a field is missing in channel!");
-    }
-
-    let items: RSSItem[];
-
-    const itemField = parsedObj.rss.channel.item;
-
-    if (itemField) {
-        if (Array.isArray(itemField)) {
-            items = itemField;
-        } else {
-            items = [ itemField ];
-        }
-    } else {
-        items = [];
-    }
-
-    const validatedItems: RSSItem[] = [];
+    const rssItems: RSSItem[] = [];
 
     for (const item of items) {
         if (!item.title || !item.link || !item.description || !item.pubDate) {
             continue;
         }
 
-        validatedItems.push(item);
-    }
-
-    return {
-        channel: {
-            title: title,
-            link: link,
-            description: description,
-            item: validatedItems,
+           rssItems.push({
+                title: item.title,
+                link: item.link,
+                description: item.description,
+                pubDate: item.pubDate,
+            });
         }
-    }
 
-}
+                const rss: RSSFeed = {
+            channel: {
+            title: channel.title,
+            link: channel.link,
+            description: channel.description,
+            item: rssItems,
+            },
+        };
+
+        return rss;
+    }

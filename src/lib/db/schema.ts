@@ -1,3 +1,4 @@
+import { SQL } from "drizzle-orm";
 import { pgTable, timestamp, uuid, text, unique } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -24,6 +25,7 @@ export const feeds = pgTable("feeds", {
     userId: uuid("user_id")
         .references(() => users.id, { onDelete: "cascade"}) // deleting a user also deletes their feed
         .notNull(),
+    lastFetchedAt: timestamp("last_fetched_at"),
 });
 
 export type Feed = typeof feeds.$inferSelect;

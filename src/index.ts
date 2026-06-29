@@ -44,7 +44,6 @@ async function main() {
         await runCommand(registry, args[0], ...args.slice(1));
         process.exit(0);
     }
-
 }
 
 main().catch((err) => {
