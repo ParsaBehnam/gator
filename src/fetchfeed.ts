@@ -14,10 +14,14 @@ export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
     }
 
     const xml = await response.text();
-    const parser = new XMLParser();
-    let result = parser.parse(xml); 
+    const parser = new XMLParser({
+        processEntities: false
+    });
 
+    const result = parser.parse(xml); 
+    console.log(result);
     const channel = result.rss?.channel;
+    
 
     if (!channel) {
         throw new Error("failed to parse channel");
@@ -27,7 +31,6 @@ export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
     !channel ||
     !channel.title ||
     !channel.link ||
-    !channel.description ||
     !channel.item
   ) {
     throw new Error("failed to parse channel");
@@ -40,7 +43,7 @@ export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
     const rssItems: RSSItem[] = [];
 
     for (const item of items) {
-        if (!item.title || !item.link || !item.description || !item.pubDate) {
+        if (!item.title || !item.link || !item.pubDate) {
             continue;
         }
 
@@ -52,7 +55,7 @@ export async function fetchFeed(feedURL: string): Promise<RSSFeed> {
             });
         }
 
-                const rss: RSSFeed = {
+        const rss: RSSFeed = {
             channel: {
             title: channel.title,
             link: channel.link,

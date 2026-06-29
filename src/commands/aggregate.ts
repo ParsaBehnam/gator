@@ -1,6 +1,7 @@
 import { fetchFeed } from "../fetchfeed";
 import { getNextFeedToFetch, markFeedFetched } from "../lib/db/queries/feeds";
-import type { Feed } from "../lib/db/schema";
+import { createPost } from "../lib/db/queries/posts";
+import type { Feed, Post } from "../lib/db/schema";
 
 export async function handlerAggregate(cmdName: string, ...args: string[]) {
     if (args.length !== 1 ) {
@@ -49,8 +50,20 @@ async function scrapeFeed(feed: Feed) {
   await markFeedFetched(feed.id);
 
   for (const item of feedData.channel.item) {
-    console.log(`TITLE: ${item.title}`);
-  }
+    
+    const now = new Date();
+
+    await createPost({
+        url: item.link,
+        feedId: feed.id,
+        title: item.title,
+        createdAt: now,
+        updatedAt: now,
+        description: item.description,
+        publishedAt: new Date(item.pubDate),
+    } satisfies Post);
+
+}
 
   console.log(
     `Feed ${feed.name} collected, ${feedData.channel.item.length} posts found`,
